@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "notar"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "cryptography>=42.0",
+    "base58>=2.1",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.7",
+    "httpx>=0.27",
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2", "ruff>=0.4"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["sdk/notar"]
+
+[tool.ruff]
+line-length = 88
