@@ -1,3 +1,11 @@
-from .identity import create_identity, sign_card, verify_card
+from .identity import Identity, create_identity, public_key_from_did, sign_card, verify_card
+from .client import NotarClient
 
-__all__ = ["create_identity", "sign_card", "verify_card"]
+__all__ = [
+    "Identity",
+    "create_identity",
+    "public_key_from_did",
+    "sign_card",
+    "verify_card",
+    "NotarClient",
+]
