@@ -1,5 +1,28 @@
 # Notar 项目进度
 
+## 已完成：M3 — 多 agent 身份验证端到端演示
+
+**演示场景**：Alice（本地）↔ Bob（外部）↔ Eve（冒充者）三方互动
+
+### 演示结果
+| 场景 | 结果 |
+|------|------|
+| Alice 注册 | ✅ `did:key:z6Mkrn9UHpAGXtXJbef26BndvNn8w7gTQLvJ19m4P2ANnMEV` 上线 |
+| Alice → Bob 真实消息 | ✅ HTTP 200，Bob 回复"身份已通过 Notar 验证" |
+| Eve 冒充 Alice → Bob | ❌ HTTP 403，"identity verification failed" |
+
+### 新增文件
+- `examples/agent.py` — 最小化 Notar-enabled demo agent：
+  - `POST /inbox`：收到消息时调 `verify_card` 本地验签，验证通过才接受
+  - `POST /control`：支持 `{"to": DID, "message": "..."}` 发送经验证消息；支持 `{"forge": VICTIM_DID, "to": DID, "message": "..."}` 冒充演示
+  - `GET /whoami`：返回自身 name 和 DID
+
+### Bug 修复
+- **问题**：`NotarClient._run()` 内部用 `anyio.run()` 创建新事件循环，在 FastAPI async 路由里调用时与已运行的事件循环冲突，抛 `RuntimeError: Already running asyncio in this thread`
+- **修复**：在 `/control` 路由里用 `asyncio.get_event_loop().run_in_executor(None, ...)` 将同步 `nc.get_agent()` 推至线程池执行
+
+---
+
 ## 已完成：部署上线（Render + Postgres）
 
 **生产地址**：https://notar-registry.onrender.com  
