@@ -1,5 +1,34 @@
 # Notar 项目进度
 
+## 已完成：部署上线（Render + Postgres）
+
+**生产地址**：https://notar-registry.onrender.com  
+**pytest 结果**：25 passed（全绿，无回归）  
+**git log**：7 commits，已推送至 https://github.com/Termianlh/notar
+
+### 本阶段完成内容
+- `LICENSE` — MIT 2026 Justin Hu
+- `README.md` — 正式 README，Quickstart 已真实跑通（本地 + 生产均验证）
+- `pyproject.toml` — 补 description / license / authors / urls / psycopg2-binary
+- `registry/db.py` — `postgres://` → `postgresql://` URL 规范化；SQLite/Postgres 条件 connect_args
+- `Procfile` — `web: uvicorn registry.app:app --host 0.0.0.0 --port $PORT`
+- `docs/index.html` — 落地页
+- M1+M2 实现代码补提交（之前未 commit）
+
+### 生产验证输出（真实运行）
+```
+register  → {'registered': True, 'did': 'did:key:z6Mku...'}
+get_agent → {'issuer': 'did:key:z6Mku...', 'name': 'Alice', 'endpoint': '...'}
+verify    → {'valid': True, 'did': 'did:key:z6Mku...', 'status': 'active'}
+```
+
+### 部署说明
+- 平台：Render，数据库：Render 托管 Postgres
+- 环境变量：`DATABASE_URL`（Render 自动注入，`postgres://` 前缀自动规范化）
+- 启动命令：`uvicorn registry.app:app --host 0.0.0.0 --port $PORT`
+
+---
+
 ## 已完成：M2 — SDK Client（NotarClient）
 
 **pytest 结果**：25 passed in 0.60s（全绿，M1 20 + M2 5）
