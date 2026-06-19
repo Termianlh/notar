@@ -5,6 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "notar"
 version = "0.1.0"
+description = "Neutral identity and reputation layer for AI agents"
+license = "MIT"
+authors = [
+    { name = "Justin Hu" },
+]
 requires-python = ">=3.11"
 dependencies = [
     "cryptography>=42.0",
@@ -18,6 +23,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.2", "ruff>=0.4"]
+
+[project.urls]
+Repository = "https://github.com/justinhu/notar"
 
 [tool.hatch.build.targets.wheel]
 packages = ["sdk/notar"]
