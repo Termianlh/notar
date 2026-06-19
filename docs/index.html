@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notar — Verifiable identity for AI agents</title>
+<meta name="description" content="Notar gives every AI agent a cryptographic identity and a tamper-proof card, so a stranger's agent can be verified before you trust it. Open source, framework-neutral, verifiable offline.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@300;400;500;600&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#0E0F12;
+    --paper-2:#17181C;
+    --ink:#ECEAE3;
+    --ink-soft:#9FA0A4;
+    --ink-faint:#6C6E72;
+    --accent:#94A8D4;
+    --line:rgba(236,234,227,0.13);
+    --line-soft:rgba(236,234,227,0.07);
+    --code-bg:#16171B;
+    --code-ink:#D9D7CF;
+    --verify:#5FBE8E;
+    --reject:#DD7468;
+    --gold:#C9A86A;
+    --serif:'Spectral',Georgia,serif;
+    --sans:'Libre Franklin',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  ::selection{background:var(--accent);color:var(--paper)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 32px}
+
+  .eyebrow{font-family:var(--sans);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+
+  /* ---- nav ---- */
+  header{position:sticky;top:0;z-index:50;background:rgba(14,15,18,0.82);backdrop-filter:blur(9px);border-bottom:1px solid var(--line-soft)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:74px}
+  .brand{font-family:var(--serif);font-weight:500;font-size:23px;letter-spacing:-0.01em}
+  .brand .pd{color:var(--accent)}
+  .nav-links{display:flex;align-items:center;gap:34px;font-size:14px;font-weight:500;color:var(--ink-soft)}
+  .nav-links a{transition:color .18s}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-gh{color:var(--ink)!important}
+  .nav-gh::after{content:" ↗";color:var(--ink-faint)}
+  @media(max-width:680px){.nav-links a:not(.nav-gh){display:none}}
+
+  /* ---- hero ---- */
+  .hero{padding:104px 0 72px;max-width:880px}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,6.2vw,72px);line-height:1.04;letter-spacing:-0.02em;margin:26px 0 28px}
+  .hero h1 em{font-style:italic;color:var(--accent)}
+  .hero .lede{font-size:21px;line-height:1.55;color:var(--ink-soft);max-width:54ch;margin-bottom:38px;font-weight:400}
+  .cta-row{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+  .btn{font-family:var(--sans);font-size:15px;font-weight:600;padding:14px 26px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:background .18s,transform .12s}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--ink);color:var(--paper)}
+  .btn-primary:hover{background:#fff}
+  .link-cta{font-size:15px;font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--ink);padding-bottom:2px;transition:color .18s,border-color .18s}
+  .link-cta:hover{color:var(--accent);border-color:var(--accent)}
+
+  /* ---- section frame ---- */
+  section{padding:78px 0;border-top:1px solid var(--line)}
+  .sec-label{font-family:var(--sans);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-bottom:22px}
+  .sec-h{font-family:var(--serif);font-weight:400;font-size:clamp(27px,3.6vw,38px);line-height:1.12;letter-spacing:-0.015em;max-width:24ch}
+
+  /* ---- problem ---- */
+  .statement{font-family:var(--serif);font-weight:300;font-size:clamp(26px,3.6vw,40px);line-height:1.32;letter-spacing:-0.01em;max-width:20ch;color:var(--ink)}
+  .statement b{font-weight:500}
+  .statement .q{color:var(--accent);font-style:italic;font-weight:400}
+  .problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:end}
+  .problem-note{font-size:17px;color:var(--ink-soft);max-width:42ch;padding-bottom:6px}
+  @media(max-width:780px){.problem-grid{grid-template-columns:1fr;gap:28px}.statement{max-width:none}}
+
+  /* ---- terminal ---- */
+  .term{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 30px 70px -45px rgba(0,0,0,.8);margin-top:30px}
+  .term-bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+  .term-bar .d{width:11px;height:11px;border-radius:50%;background:#3A3D44}
+  .term-bar .ttl{font-family:var(--mono);font-size:12px;color:#7E8088;margin-left:8px}
+  .term-body{padding:24px 24px 26px;font-family:var(--mono);font-size:13.5px;line-height:1.95;color:var(--code-ink);overflow-x:auto}
+  .term-body .ln{white-space:pre;display:block}
+  .term-body .step{color:#7E8088}
+  .term-body .ok::before{content:"✓  ";color:var(--verify);font-weight:700}
+  .term-body .ok{color:#A9D9BF}
+  .term-body .no::before{content:"✗  ";color:var(--reject);font-weight:700}
+  .term-body .no{color:#E6B6AF}
+  .term-body .did{color:var(--gold)}
+  .term-body .cmt{color:#63666D}
+  .proof-cap{font-size:18px;line-height:1.6;color:var(--ink-soft);margin-top:26px;max-width:62ch}
+  .proof-cap b{color:var(--ink);font-weight:600}
+
+  /* ---- quickstart ---- */
+  .code{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13.5px;line-height:1.85;padding:24px;overflow-x:auto;margin-top:30px;color:var(--code-ink);box-shadow:0 30px 70px -45px rgba(0,0,0,.8)}
+  .code .ln{white-space:pre;display:block}
+  .code .k{color:var(--gold)}
+  .code .s{color:#A9D9BF}
+  .code .c{color:#63666D}
+  .code .r{color:#8A8C92}
+  .install{font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-top:18px}
+  .install code{color:var(--ink);background:var(--paper-2);border:1px solid var(--line);padding:4px 9px;border-radius:4px}
+
+  /* ---- how it works ---- */
+  .rows{margin-top:34px;border-top:1px solid var(--line)}
+  .row{display:grid;grid-template-columns:0.9fr 1.4fr;gap:40px;padding:30px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .row .rl{font-family:var(--serif);font-size:22px;font-weight:500;letter-spacing:-0.01em;color:var(--ink)}
+  .row .rl .tag{display:block;font-family:var(--sans);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;font-weight:600}
+  .row .rd{color:var(--ink-soft);font-size:17px;line-height:1.6}
+  @media(max-width:680px){.row{grid-template-columns:1fr;gap:10px;padding:26px 0}}
+
+  /* ---- status ---- */
+  .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:34px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .scol{padding:30px 32px}
+  .scol+.scol{border-left:1px solid var(--line)}
+  .scol h3{font-family:var(--sans);font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin-bottom:20px}
+  .scol ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+  .scol li{font-size:16px;color:var(--ink);display:flex;gap:12px;align-items:baseline;line-height:1.4}
+  .scol.now li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--verify);flex:none;transform:translateY(7px)}
+  .scol.next li{color:var(--ink-soft)}
+  .scol.next li::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink-faint);flex:none;transform:translateY(7px)}
+  @media(max-width:560px){.status-grid{grid-template-columns:1fr}.scol+.scol{border-left:none;border-top:1px solid var(--line)}}
+
+  /* ---- feedback ---- */
+  .feedback{text-align:center;background:var(--paper-2)}
+  .feedback .sec-h{margin:0 auto 18px;max-width:18ch}
+  .feedback p{color:var(--ink-soft);max-width:52ch;margin:0 auto 36px;font-size:18px}
+  .feedback .cta-row{justify-content:center}
+
+  /* ---- footer ---- */
+  footer{padding:44px 0;border-top:1px solid var(--line)}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--ink-soft)}
+  .foot .brand{font-size:18px}
+  .foot .l{display:flex;gap:26px;flex-wrap:wrap;align-items:center}
+  .foot a:hover{color:var(--ink)}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .8s ease,transform .8s ease}
+  .reveal.in{opacity:1;transform:none}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important}
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">Notar<span class="pd">.</span></div>
+    <nav class="nav-links">
+      <a href="#proof">Proof</a>
+      <a href="#start">Quickstart</a>
+      <a href="#how">How it works</a>
+      <a class="nav-gh" href="https://github.com/Termianlh/notar" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="wrap">
+    <div class="hero">
+      <span class="eyebrow">Open source · MIT · Python</span>
+      <h1>Verifiable identity for <em>AI&nbsp;agents</em>.</h1>
+      <p class="lede">Give an agent a cryptographic identity and a tamper-proof card — so a stranger's agent can be verified before you trust it.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Termianlh/notar" target="_blank" rel="noopener">View on GitHub</a>
+        <a class="link-cta" href="#start">Read the quickstart →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLEM -->
+  <section id="problem">
+    <div class="wrap reveal">
+      <div class="sec-label">The problem</div>
+      <div class="problem-grid">
+        <p class="statement">A valid-looking message proves nothing. A <b>signature</b> proves <span class="q">everything</span>.</p>
+        <p class="problem-note">As agents start acting for us — booking, negotiating, paying other people's agents — one question decides everything: is this agent who it claims to be?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section id="proof">
+    <div class="wrap reveal">
+      <div class="sec-label">Proof</div>
+      <h2 class="sec-h">Watch an impostor get rejected.</h2>
+      <div class="term">
+        <div class="term-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="ttl">python examples/demo.py</span></div>
+        <div class="term-body">
+<span class="ln step">① Alice creates an identity</span>
+<span class="ln did">   did:key:z6Mkg8bf168b99TWdxF16FkfmKeCRsiAJTzqYrHNTZsFBSHx</span>
+<span class="ln step">② Alice signs a card and registers it</span>
+<span class="ln ok">registered</span>
+<span class="ln step">③ Bob looks up Alice and verifies her</span>
+<span class="ln ok">Alice is who she claims to be   (status: active)</span>
+<span class="ln step">④ Eve forges a card claiming to be Alice</span>
+<span class="ln no">rejected — signature doesn't match Alice's key   (422)</span>
+<span class="ln step">⑤ A tampered card is checked</span>
+<span class="ln no">invalid — one changed byte breaks the signature</span>
+<span class="ln step">⑥ Eve registers as herself</span>
+<span class="ln ok">registered   <span class="cmt"># being yourself is fine — impersonating isn't</span></span>
+        </div>
+      </div>
+      <p class="proof-cap"><b>Eve can claim Alice's identity, but she can't sign like Alice</b> — because she doesn't hold Alice's private key. The registry refuses to store any card whose signature doesn't match the identity it claims.</p>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section id="start">
+    <div class="wrap reveal">
+      <div class="sec-label">Quickstart</div>
+      <h2 class="sec-h">Four lines to a verifiable identity.</h2>
+      <div class="code">
+<span class="ln"><span class="k">from</span> notar <span class="k">import</span> create_identity, sign_card, verify_card</span>
+<span class="ln"></span>
+<span class="ln"><span class="c"># give your agent a verifiable identity</span></span>
+<span class="ln">ident = create_identity()</span>
+<span class="ln">print(ident.did)            <span class="r">→ did:key:z6Mk…</span></span>
+<span class="ln"></span>
+<span class="ln"><span class="c"># sign an agent card — its "business card"</span></span>
+<span class="ln">card = sign_card({</span>
+<span class="ln">    <span class="s">"issuer"</span>: ident.did,</span>
+<span class="ln">    <span class="s">"name"</span>: <span class="s">"Alice"</span>,</span>
+<span class="ln">    <span class="s">"endpoint"</span>: <span class="s">"https://alice.example/a2a"</span>,</span>
+<span class="ln">}, ident.private_key)</span>
+<span class="ln"></span>
+<span class="ln"><span class="c"># anyone can verify it — offline, no server</span></span>
+<span class="ln">verify_card(card)           <span class="r">→ True</span></span>
+<span class="ln">card[<span class="s">"name"</span>] = <span class="s">"evil-alice"</span></span>
+<span class="ln">verify_card(card)           <span class="r">→ False</span></span>
+      </div>
+      <p class="install">install &nbsp;→&nbsp; <code>git clone https://github.com/Termianlh/notar &amp;&amp; cd notar &amp;&amp; pip install -e .</code></p>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section id="how">
+    <div class="wrap reveal">
+      <div class="sec-label">How it works</div>
+      <h2 class="sec-h">Standard cryptography, put to work.</h2>
+      <div class="rows">
+        <div class="row">
+          <div class="rl"><span class="tag">Identity</span>Ed25519 &amp; did:key</div>
+          <div class="rd">Each agent holds a keypair. Its public key is encoded directly into its DID, so the identifier is self-certifying — no lookup needed to check a signature.</div>
+        </div>
+        <div class="row">
+          <div class="rl"><span class="tag">Tamper-proof</span>Signed agent cards</div>
+          <div class="rd">A card carries identity, endpoint, and capabilities, signed as one object. Change a single field and verification fails — the contact details are protected exactly like the identity.</div>
+        </div>
+        <div class="row">
+          <div class="rl"><span class="tag">No server needed</span>Verifiable offline</div>
+          <div class="rd">Checking a signature is pure math. If you hold someone's card, you can verify it on your own machine. The private key never leaves its owner.</div>
+        </div>
+        <div class="row">
+          <div class="rl"><span class="tag">Trust, not traffic</span>Registry on the trust path</div>
+          <div class="rd">The registry handles discovery, standing, and — soon — reputation. Agents find and verify each other through it, but message each other directly.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATUS -->
+  <section id="status">
+    <div class="wrap reveal">
+      <div class="sec-label">Status</div>
+      <h2 class="sec-h">Early, and honest about it.</h2>
+      <div class="status-grid">
+        <div class="scol now">
+          <h3>Working today</h3>
+          <ul>
+            <li>Cryptographic identity (Ed25519 / did:key)</li>
+            <li>Signed, tamper-proof agent cards</li>
+            <li>Offline verification</li>
+            <li>A registry — register, look up, verify</li>
+            <li>Fully tested</li>
+          </ul>
+        </div>
+        <div class="scol next">
+          <h3>Coming next</h3>
+          <ul>
+            <li>Revocation</li>
+            <li>Reputation</li>
+            <li>Human-readable handles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEEDBACK -->
+  <section class="feedback">
+    <div class="wrap reveal">
+      <h2 class="sec-h">Building agents? I want your feedback.</h2>
+      <p>If you've hit — or expect to hit — the “is this other agent real?” problem, I'd genuinely like to hear from you. This is early, and real builders shape where it goes.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Termianlh/notar/issues" target="_blank" rel="noopener">Open an issue</a>
+        <a class="link-cta" href="https://github.com/Termianlh/notar" target="_blank" rel="noopener">Star on GitHub →</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="brand">Notar<span class="pd">.</span></div>
+    <div class="l">
+      <a href="https://github.com/Termianlh/notar" target="_blank" rel="noopener">GitHub</a>
+      <span>MIT licensed</span>
+      <span>built by <a href="https://github.com/Termianlh" target="_blank" rel="noopener">Termianlh</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target);} });
+  },{threshold:0.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+
+</body>
+</html>
